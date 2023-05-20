@@ -4,10 +4,9 @@ import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './auth/auth.controller';
-import { TodoController } from './todo/todo.controller';
-import { TodoService } from './todo/todo.service';
 import { AuthService } from './auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { TaskModule } from './task/task.module';
 import * as process from 'process';
 
 @Module({
@@ -23,11 +22,11 @@ import * as process from 'process';
         expiresIn: '1d',
       },
     }),
+    TaskModule,
   ],
-  controllers: [AppController, AuthController, TodoController],
+  controllers: [AppController, AuthController],
   providers: [
     AppService,
-    TodoService,
     AuthService,
     {
       provide: 'AUTH_SERVICE',
@@ -36,27 +35,6 @@ import * as process from 'process';
         const PASS = configService.get('RABBITMQ_PASS');
         const HOST = configService.get('RABBITMQ_HOST');
         const QUEUE = configService.get('RABBITMQ_AUTH_QUEUE');
-
-        return ClientProxyFactory.create({
-          transport: Transport.RMQ,
-          options: {
-            urls: [`amqp://${USER}:${PASS}@${HOST}`],
-            queue: QUEUE,
-            queueOptions: {
-              durable: true,
-            },
-          },
-        });
-      },
-      inject: [ConfigService],
-    },
-    {
-      provide: 'TASK_SERVICE',
-      useFactory: (configService: ConfigService) => {
-        const USER = configService.get('RABBITMQ_USER');
-        const PASS = configService.get('RABBITMQ_PASS');
-        const HOST = configService.get('RABBITMQ_HOST');
-        const QUEUE = configService.get('RABBITMQ_TODO_QUEUE');
 
         return ClientProxyFactory.create({
           transport: Transport.RMQ,
