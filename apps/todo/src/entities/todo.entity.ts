@@ -2,6 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,6 +21,12 @@ export class TodoEntity {
 
   @Column({ type: 'boolean', default: false })
   finished: boolean;
+
+  @ManyToOne((type) => TodoEntity, (todo) => todo.children, { nullable: true })
+  parent: TodoEntity;
+
+  @OneToMany((type) => TodoEntity, (todo) => todo.parent)
+  children: TodoEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
