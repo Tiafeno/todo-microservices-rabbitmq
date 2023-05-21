@@ -2,13 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpException,
   HttpStatus,
   Inject,
+  Logger,
   Post,
-  Query,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { SignInDto } from './dto/signin.dto';
@@ -26,6 +25,8 @@ export class AuthController {
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
   async signIn(@Body() data: SignInDto) {
+    Logger.log('Authentification information');
+    Logger.debug(data);
     const user: UserEntity | null = await firstValueFrom(
       this.authService.send(
         {
@@ -42,9 +43,9 @@ export class AuthController {
     return await this.service.getToken(user);
   }
 
-  @Get('register')
+  @Post('register')
   @HttpCode(HttpStatus.ACCEPTED)
-  async register(@Query() data: RegisterDto) {
+  async register(@Body() data: RegisterDto) {
     const user = await firstValueFrom(
       this.authService.send({ cmd: 'one-user' }, data.email).pipe(
         catchError((er) => {

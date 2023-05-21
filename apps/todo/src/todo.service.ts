@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { TodoEntity } from './entities/todo.entity';
 import { DeepPartial, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isNull, isUndefined } from 'lodash';
 
 export type ITodo = {
   detail: string;
@@ -39,11 +40,13 @@ export class TodoService {
     try {
       let parentTask;
       const todoPartialEntities: DeepPartial<TodoEntity> = {};
-      if (data.parentId) {
-        parentTask = await this.findOnById(data.parentId);
-        todoPartialEntities.parent = parentTask;
-      } else {
-        todoPartialEntities.parent = null;
+      if (!isUndefined(data.parentId)) {
+        if (isNull(data.parentId)) {
+          todoPartialEntities.parent = null;
+        } else {
+          parentTask = await this.findOnById(data.parentId);
+          todoPartialEntities.parent = parentTask;
+        }
       }
       const response = await this.taskRepository.update(data.id, {
         ...todoPartialEntities,
@@ -51,7 +54,7 @@ export class TodoService {
       });
       const taskId = response.affected;
       if (!taskId) throw new BadRequestException('Error on update');
-      return await this.findOnById(taskId);
+      return await this.findOnById(id);
     } catch (e) {
       throw new BadRequestException('error');
     }
@@ -61,6 +64,7 @@ export class TodoService {
     return await this.taskRepository.find({
       relations: {
         children: true,
+        parent: true,
       },
     });
   }
@@ -72,6 +76,7 @@ export class TodoService {
       },
       relations: {
         children: true,
+        parent: true,
       },
     });
   }

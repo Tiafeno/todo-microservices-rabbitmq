@@ -22,7 +22,10 @@ export class TodoEntity {
   @Column({ type: 'boolean', default: false })
   finished: boolean;
 
-  @ManyToOne((type) => TodoEntity, (todo) => todo.children, { nullable: true })
+  @ManyToOne((type) => TodoEntity, (todo) => todo.children, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   parent: TodoEntity;
 
   @OneToMany((type) => TodoEntity, (todo) => todo.parent)
